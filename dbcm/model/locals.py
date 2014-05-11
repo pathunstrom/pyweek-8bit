@@ -1,0 +1,10 @@
+# Stances
+AGGRESSIVE = 3
+NEUTRAL = 2
+DEFENSIVE = 1
+PASSIVE = 0
+
+# Attack Types
+STRIKE = 2
+GRAPPLE = 1
+BLOCK = 0
