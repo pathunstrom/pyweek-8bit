@@ -4,6 +4,7 @@ TICK = 1
 INIT_GAME = 2
 INIT_SCREEN = 3
 KEY = 4
+STATE_CHANGE = 5
 
 # Direction IDs
 UP = 1
@@ -12,32 +13,13 @@ DOWN = 3
 LEFT = 4
 
 
-class QuitEvent(object):
-
-    def __init__(self):
-        self.id = QUIT
-
-    def __repr__(self):
-        return "Game quit."
-
-
-class TickEvent(object):
-
-    def __init__(self, time=0):
-        self.id = TICK
-        self.time = time
-
-    def __repr__(self):
-        return "Tick: {}ms".format(self.time)
-
-
 class InitializeEvent(object):
 
     def __init__(self):
         self.id = INIT_GAME
 
     def __repr__(self):
-        return "Game Initialized."
+        return "Event: InitializeEvent"
 
 
 class KeyEvent(object):
@@ -49,8 +31,17 @@ class KeyEvent(object):
         self.direction = direction
 
     def __repr__(self):
-        direction = "released" if self.direction == UP else "pressed"
-        return "{}-key was {}.".format(self.unicode, direction)
+        return "Event: KeyEvent, Key: {}, Direction: {}".format(
+            self.unicode, self.direction)
+
+
+class QuitEvent(object):
+
+    def __init__(self):
+        self.id = QUIT
+
+    def __repr__(self):
+        return "Event: QuitEvent"
 
 
 class ScreenInitializedEvent(object):
@@ -59,7 +50,27 @@ class ScreenInitializedEvent(object):
         self.id = INIT_SCREEN
 
     def __repr__(self):
-        return "Screen Initialized."
+        return "Event: ScreenInitializedEvent"
+
+
+class StateChangeEvent(object):
+
+    def __init__(self, state=None):
+        self.id = STATE_CHANGE
+        self.state = state
+
+    def __repr__(self):
+        state = self.state if self.state else -1
+        return "Event: StateChangeEvent, Push: {}".format(state)
+
+class TickEvent(object):
+
+    def __init__(self, time=0):
+        self.id = TICK
+        self.time = time
+
+    def __repr__(self):
+        return "Event: TickEvent, Time: {}ms".format(self.time)
 
 
 class Dispatch(object):

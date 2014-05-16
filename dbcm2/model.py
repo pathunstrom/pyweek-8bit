@@ -1,4 +1,5 @@
 import pygame
+import state
 from dispatch import *
 
 
@@ -9,15 +10,26 @@ class GameEngine(object):
 
     def __init__(self, dispatch):
         self.dispatch = dispatch
-        dispatch.subscribe([QUIT], self)
+        dispatch.subscribe([QUIT, STATE_CHANGE], self)
         self.clock = pygame.time.Clock()
         self.running = False
+        self.state = state.StateMachine()
 
     def event_trigger(self, event):
         """
         Called by Dispatch.
+
+        event (Event) = The event Dispatch notified.
+
+        Responds to STATE_CHANGE and QUIT events.
         """
-        if event.id == QUIT:
+        if event.id == STATE_CHANGE:
+            if event.state:
+                self.state.push(event.state)
+            else:
+                if not self.state.pop():
+                    self.dispatch.event_trigger(QuitEvent())
+        elif event.id == QUIT:
             self.running = False
 
     def run(self):
@@ -29,5 +41,6 @@ class GameEngine(object):
         """
         self.running = True
         self.dispatch.event_trigger(InitializeEvent())
+        self.state.push(state.MENU)
         while self.running:
             self.dispatch.event_trigger(TickEvent(self.clock.tick()))

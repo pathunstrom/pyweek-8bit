@@ -1,6 +1,6 @@
 import pygame
 import dbcm2
-import model
+import state
 from dispatch import *
 
 
@@ -25,7 +25,8 @@ class GraphicalView():
 
     def event_trigger(self, event):
         if event.id == TICK:
-            self.update()  # Update the display.
+            if self.is_initialized:
+                self.update()  # Update the display.
         elif event.id == QUIT:
             self.stop()  # Shut down display.
         elif event.id == INIT_GAME:
@@ -33,17 +34,41 @@ class GraphicalView():
 
     def update(self):
         """
-        Draw the screen based on state.
+        Render the screen based on state.
         """
+        current_state = self.model.state.peek()
+        if current_state == state.PLAY:
+            self.render_play()
+        elif current_state == state.MENU:
+            self.render_menu()
+        elif current_state == state.HELP:
+            self.render_help()
+        else:
+            raise state.StateError(current_state)
 
-        if self.is_initialized:
-            self.display.fill((0, 0, 0))
-            message = self.small_font.render(
-                'View is drawing on your screen',
-                True,
-                (255, 255, 255))
-            self.display.blit(message, (0, 0))
-            pygame.display.update()
+    def render_menu(self):
+        self.display.fill((0, 0, 0))
+        message = self.small_font.render(
+            'You are in the menu.\nSpace to play.\nEsc exits.',
+            True, (255, 255, 255))
+        self.display.blit(message, (0, 0))
+        pygame.display.update()
+
+    def render_play(self):
+        self.display.fill((0, 0, 0))
+        message = self.small_font.render(
+            'You are playing the game.\nF1 for help.',
+            True, (255, 255, 255))
+        self.display.blit(message, (0, 0))
+        pygame.display.update()
+
+    def render_help(self):
+        self.display.fill((0, 0, 0))
+        message = self.small_font.render(
+            'Help screen.\nSpace, Esc, or Return.',
+            True, (255, 255, 255))
+        self.display.blit(message, (0, 0))
+        pygame.display.update()
 
     def initialize(self):
         """
