@@ -1,8 +1,8 @@
-INTRO = 1
-MENU = 2
-HELP = 3
-ABOUT = 4
-PLAY = 5
+MENU = 0
+BATTLE_MENU = 10
+BATTLE_RESOLUTION = 11
+BREED_MENU = 20
+OPTIONS = 90
 
 
 class StateMachine(object):
@@ -12,6 +12,7 @@ class StateMachine(object):
 
     def __init__(self):
         self.stack = []
+        self.time = 0
 
     def peek(self):
         """
@@ -31,7 +32,7 @@ class StateMachine(object):
         """
         try:
             self.stack.pop()
-            # check behavior, this doesn't match documentation.
+            self.time = 0
             return len(self.stack) > 0
         except IndexError:
             return None
