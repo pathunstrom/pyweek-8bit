@@ -6,13 +6,6 @@ INIT_SCREEN = 3
 KEY = 4
 STATE_CHANGE = 5
 
-# Direction IDs
-UP = 1
-RIGHT = 2
-DOWN = 3
-LEFT = 4
-
-
 class InitializeEvent(object):
 
     def __init__(self):
@@ -60,7 +53,7 @@ class StateChangeEvent(object):
         self.state = state
 
     def __repr__(self):
-        state = self.state if self.state else -1
+        state = self.state
         return "Event: StateChangeEvent, Push: {}".format(state)
 
 class TickEvent(object):

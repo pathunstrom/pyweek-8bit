@@ -1,8 +1,8 @@
 import time
-import os
 import pygame
+from dbcm2.model import state
+import os
 import dbcm2
-import state
 from dispatch import *
 
 
@@ -56,7 +56,7 @@ class GraphicalView():
             location = 280, index * 50
             text_location = 280 + 30, index*50 + 20
             source = pygame.Rect(0, 50, 120, 50)
-            if index == self.model.state_model.current:
+            if index == self.model.state_model.selection:
                 source.top = 0
             self.display.blit(button, location, source)
             message = self.small_font.render(option, True, (0, 0, 0))
@@ -76,11 +76,53 @@ class GraphicalView():
         pygame.display.update()
 
     def render_battle_menu(self):
-        self.display.fill((0, 0, 0))
-        message = self.small_font.render(
-            'Pick an attack',
-            True, (255, 255, 255))
-        self.display.blit(message, (0, 0))
+        self.display.fill((191, 163, 163))
+        pygame.draw.rect(self.display, (242, 218, 218),
+                         pygame.Rect(0, 250, 400, 150))
+
+        # Draw menu
+        pygame.draw.rect(self.display, (26, 64, 63),
+                         pygame.Rect(0, 250, 400, 150), 2)
+        button = self.ui_elements[0]
+        stance = self.model.state_model.player.stance
+        for index, option in self.model.state_model.player.moves[stance]:
+            location = 280, 250 + 50*index
+            text_location = location[0] + 30, location[1] + 20
+            source = pygame.Rect(0, 50, 120, 50)
+            if index == self.model.state_model.selection:
+                source.top = 0
+            self.display.blit(button, location, source)
+            message = self.small_font.render(option, True, (0, 0, 0))
+            self.display.blit(message, text_location)
+
+
+        # Draw battle zone
+        # Draw Player Information
+        hp_element = self.ui_elements[1]
+        hp_max = self.model.state_model.player.max_hp
+        hp_current = self.model.state_model.player.hp
+        hp_percent = int(hp_current / float(hp_max) * 100)
+        color = (0, 255, 0) if hp_percent > 50 else (255, 0, 0)
+        pygame.draw.rect(self.display, color,
+                         pygame.Rect(270, 183, hp_percent, 5))
+        self.display.blit(hp_element, (170, 170))
+        message = "{} / {}".format(hp_current, hp_max)
+        render = self.small_font.render(message, True, (0, 0, 0))
+        self.display.blit(render, (285, 193))
+
+        # Draw the Enemy Information
+        hp_element = pygame.transform.flip(hp_element, 1, 0)
+        hp_max = self.model.state_model.opponent.max_hp
+        hp_current = self.model.state_model.opponent.hp
+        hp_percent = int(hp_current / float(hp_max) * 100)
+        color = (0, 255, 0) if hp_percent > 50 else (255, 0, 0)
+        pygame.draw.rect(self.display, color,
+                         pygame.Rect(30, 23, hp_percent, 5))
+        self.display.blit(hp_element, (10, 10))
+        message = "{} / {}".format(hp_current, hp_max)
+        render = self.small_font.render(message, True, (0, 0, 0))
+        self.display.blit(render, (45, 33))
+
         pygame.display.update()
 
     def render_splash(self):
@@ -114,6 +156,7 @@ class GraphicalView():
             True, (42, 102, 26))
         self.display.blit(render, (140, 200))
         pygame.display.update()
+        time.sleep(1)
 
         images = os.path.dirname(os.path.abspath(__file__))
         images = os.path.join(images, "resources", "ui")

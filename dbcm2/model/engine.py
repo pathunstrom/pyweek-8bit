@@ -1,6 +1,8 @@
 import pygame
+from dbcm2.dispatch import *
 import state
-from dispatch import *
+import menu
+import battle
 
 
 class GameEngine(object):
@@ -14,7 +16,7 @@ class GameEngine(object):
         self.clock = pygame.time.Clock()
         self.running = False
         self.state = state.StateMachine()
-        self.state_model = MenuModel()
+        self.state_model = menu.MainMenu()
         self.counter = 0
 
     def event_trigger(self, event):
@@ -27,10 +29,11 @@ class GameEngine(object):
         """
         if event.id == STATE_CHANGE:
             if event.state:
-                self.change_state_model(self.state.push(event.state))
+                self.state.push(event.state)
             else:
                 if not self.state.pop():
                     self.dispatch.event_trigger(QuitEvent())
+            self.change_state_model(self.state.peek())
         elif event.id == QUIT:
             self.running = False
 
@@ -47,30 +50,10 @@ class GameEngine(object):
         while self.running:
             self.dispatch.event_trigger(TickEvent(self.clock.tick()))
 
-    def change_state_model(self, current_state):
-        if current_state == state.MENU:
-            self.state_model = MenuModel()
-
-
-class MenuModel(object):
-    """
-    Tracks current state of the menu.
-    """
-    def __init__(self):
-        self.options = ["Battle", "Breed", "Options", "Quit"]
-        self.current = 0
-
-    def up(self):
-        if self.current:
-            self.current += -1
-        else:
-            self.current = len(self.options) - 1
-
-    def down(self):
-        if self.current == len(self.options) - 1:
-            self.current = 0
-        else:
-            self.current += 1
-
-    def __repr__(self):
-        return "MenuModel Current Option: " + self.options[self.current]
+    def change_state_model(self, new_state):
+        if new_state == state.MENU:
+            if not type(self.state_model) == menu.MainMenu:
+                self.state_model = menu.MainMenu()
+        elif new_state == state.BATTLE_MENU:
+            if not type(self.state_model) == battle.BattleModel:
+                self.state_model = battle.BattleModel()

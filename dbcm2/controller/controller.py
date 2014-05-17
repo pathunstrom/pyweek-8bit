@@ -1,9 +1,9 @@
 import pygame
-import state
-from dispatch import *
+import dbcm2.model.state as state
+from dbcm2.dispatch import *
 
 
-class UserInput(object):
+class Controller(object):
     """
     Handles keyboard input.
     """
@@ -25,7 +25,7 @@ class UserInput(object):
         """
 
         if event.id == TICK:
-            # Handle pygame event Queue and post messages to disaptch.
+            # Handle pygame event Queue and post messages to dispatch.
             self.handle_input(event)
         elif event.id == INIT_SCREEN:
             # Prepare pygame event queue.
@@ -57,14 +57,18 @@ class UserInput(object):
     def handle_battle_menu(self):
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    self.dispatch.event_trigger(StateChangeEvent())
-                elif event.key == pygame.K_RETURN:
+                if event.key == pygame.K_RETURN:
                     self.dispatch.event_trigger(
                         StateChangeEvent(state.BATTLE_RESOLUTION))
+                elif event.key in [pygame.K_UP, pygame.K_LEFT]:
+                    self.model.state_model.up()
+                elif event.key in [pygame.K_DOWN, pygame.K_RIGHT]:
+                    self.model.state_model.down()
+                elif event.key == pygame.K_ESCAPE:
+                    self.dispatch.event_trigger(StateChangeEvent())
                 else:
                     self.dispatch.event_trigger(
-                        KeyEvent(event.key, event.unicode, DOWN))
+                        KeyEvent(event.key, event.unicode, pygame.KEYDOWN))
             elif event.type == pygame.QUIT:
                 self.dispatch.event_trigger(QuitEvent())
 
@@ -75,9 +79,9 @@ class UserInput(object):
                     self.dispatch.event_trigger(StateChangeEvent())
                 elif event.key == pygame.K_RETURN:
                     self.menu_accept()
-                elif event.key == pygame.K_UP:
+                elif event.key in (pygame.K_UP, pygame.K_LEFT):
                     self.model.state_model.up()
-                elif event.key == pygame.K_DOWN:
+                elif event.key in (pygame.K_DOWN, pygame.K_RIGHT):
                     self.model.state_model.down()
             elif event.type == pygame.QUIT:
                 self.dispatch.event_trigger(QuitEvent())
@@ -92,12 +96,14 @@ class UserInput(object):
                     self.dispatch.event_trigger(StateChangeEvent())
 
     def menu_accept(self):
-        if self.model.state_model.current == 0:
-            self.model.state.push(state.BATTLE_MENU)
-        elif self.model.state_model.current == 1:
+        if self.model.state_model.selection == 0:
+            print("Controller: Enter Battle Menu.")
+            self.dispatch.event_trigger(
+                StateChangeEvent(state.BATTLE_MENU))
+        elif self.model.state_model.selection == 1:
             # self.model.state.push(state.BREED_MENU)
             pass
-        elif self.model.state_model.current == 2:
+        elif self.model.state_model.selection == 2:
             # self.model.state.push(state.OPTIONS)
             pass
         else:

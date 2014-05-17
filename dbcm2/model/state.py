@@ -1,8 +1,8 @@
-MENU = 0
-BATTLE_MENU = 10
-BATTLE_RESOLUTION = 11
-BREED_MENU = 20
-OPTIONS = 90
+MENU = 1
+BATTLE_MENU = 11
+BATTLE_RESOLUTION = 12
+BREED_MENU = 21
+OPTIONS = 91
 
 
 class StateMachine(object):
@@ -12,7 +12,6 @@ class StateMachine(object):
 
     def __init__(self):
         self.stack = []
-        self.time = 0
 
     def peek(self):
         """
