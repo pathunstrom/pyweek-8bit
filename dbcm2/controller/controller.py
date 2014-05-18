@@ -94,6 +94,8 @@ class Controller(object):
                                  pygame.K_ESCAPE,
                                  pygame.K_RETURN]:
                     self.dispatch.event_trigger(StateChangeEvent())
+            elif event.type == pygame.QUIT:
+                self.dispatch.event_trigger(QuitEvent())
 
     def menu_accept(self):
         if self.model.state_model.selection == 0:

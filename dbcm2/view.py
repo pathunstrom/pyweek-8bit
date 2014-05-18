@@ -1,9 +1,12 @@
 import time
-import pygame
-from dbcm2.model import state
 import os
+import pygame
 import dbcm2
+from dbcm2.model import state
 from dispatch import *
+
+
+BATTLE_BG_COLOR = 191, 163, 163
 
 
 class GraphicalView():
@@ -48,6 +51,7 @@ class GraphicalView():
             self.render_battle_resolution()
         else:
             raise state.StateError(current_state)
+        pygame.display.update()
 
     def render_menu(self):
         self.display.fill((255, 255, 255))
@@ -61,40 +65,13 @@ class GraphicalView():
             self.display.blit(button, location, source)
             message = self.small_font.render(option, True, (0, 0, 0))
             self.display.blit(message, text_location)
-        pygame.display.update()
 
-    def render_battle_resolution(self):
-        self.display.fill((0, 0, 0))
-        message = self.small_font.render(
-            'The game is animating a battle.',
-            True, (255, 255, 255))
-        self.display.blit(message, (0, 0))
-        message = self.small_font.render(
-            'It will return to the battle menu shortly.',
-            True, (255, 255, 255))
-        self.display.blit(message, (0, 30))
-        pygame.display.update()
-
-    def render_battle_menu(self):
-        self.display.fill((191, 163, 163))
+    def render_battle_frame(self):
+        self.display.fill(BATTLE_BG_COLOR)
         pygame.draw.rect(self.display, (242, 218, 218),
                          pygame.Rect(0, 250, 400, 150))
-
-        # Draw menu
         pygame.draw.rect(self.display, (26, 64, 63),
                          pygame.Rect(0, 250, 400, 150), 2)
-        button = self.ui_elements[0]
-        stance = self.model.state_model.player.stance
-        for index, option in self.model.state_model.player.moves[stance]:
-            location = 280, 250 + 50*index
-            text_location = location[0] + 30, location[1] + 20
-            source = pygame.Rect(0, 50, 120, 50)
-            if index == self.model.state_model.selection:
-                source.top = 0
-            self.display.blit(button, location, source)
-            message = self.small_font.render(option, True, (0, 0, 0))
-            self.display.blit(message, text_location)
-
 
         # Draw battle zone
         # Draw Player Information
@@ -123,7 +100,33 @@ class GraphicalView():
         render = self.small_font.render(message, True, (0, 0, 0))
         self.display.blit(render, (45, 33))
 
-        pygame.display.update()
+
+    def render_battle_resolution(self):
+        self.render_battle_frame()
+        message = self.small_font.render(
+            'The game is animating a battle.',
+            True, (255, 255, 255))
+        self.display.blit(message, (0, 100))
+        message = self.small_font.render(
+            'It will return to the battle menu shortly.',
+            True, (255, 255, 255))
+        self.display.blit(message, (0, 130))
+
+    def render_battle_menu(self):
+        self.render_battle_frame()
+
+        # Draw menu
+        button = self.ui_elements[0]
+        stance = self.model.state_model.player.stance
+        for index, option in self.model.state_model.player.moves[stance]:
+            location = 280, 250 + 50*index
+            text_location = location[0] + 30, location[1] + 20
+            source = pygame.Rect(0, 50, 120, 50)
+            if index == self.model.state_model.selection:
+                source.top = 0
+            self.display.blit(button, location, source)
+            message = self.small_font.render(option, True, (0, 0, 0))
+            self.display.blit(message, text_location)
 
     def render_splash(self):
         self.display.fill((193, 153, 204))
@@ -135,7 +138,6 @@ class GraphicalView():
             'Patrick Thunstrom',
             True, (42, 102, 26))
         self.display.blit(render, (140, 200))
-        pygame.display.update()
 
     def initialize(self):
         """
@@ -146,15 +148,7 @@ class GraphicalView():
         pygame.display.set_caption('demo game')
         self.display = pygame.display.set_mode(dbcm2.resolution)
         self.small_font = pygame.font.Font(None, 20)
-        self.display.fill((193, 153, 204))
-        render = self.small_font.render(
-            'Game By',
-            True, (42, 102, 26))
-        self.display.blit(render, (175, 180))
-        render = self.small_font.render(
-            'Patrick Thunstrom',
-            True, (42, 102, 26))
-        self.display.blit(render, (140, 200))
+        self.render_splash()
         pygame.display.update()
         time.sleep(1)
 
