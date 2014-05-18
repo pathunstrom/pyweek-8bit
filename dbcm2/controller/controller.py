@@ -3,7 +3,24 @@ import dbcm2.model.state as state
 from dbcm2.dispatch import *
 
 
-class Controller(object):
+class Controller(Dispatch):
+
+    def __init__(self, dispatcher):
+        super(Controller, self).__init__()
+        self.dispatcher = dispatcher
+        self.events = set()
+
+    def subscribe(self, events, subscriber):
+        super(Controller, self).subscribe(events, subscriber)
+        self.events.update(events)
+        print self.events
+        self.dispatcher.subscribe(self.events, self)
+
+    def event_trigger(self, event):
+        super(Controller, self).event_trigger(event)
+
+
+class PygameController(object):
     """
     Handles keyboard input.
     """
@@ -14,7 +31,7 @@ class Controller(object):
         model (GameEngine): a strong reference to the game Model.
         """
 
-        self.dispatch = dispatcher
+        self.dispatch = dispatcher.dispatcher
         dispatcher.subscribe([TICK, INIT_SCREEN], self)
         self.model = model
         self.active = False

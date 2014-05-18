@@ -76,14 +76,13 @@ class Dispatch(object):
         for event in events:
             try:
                 if not subscriber in self._subscribers[event]:
-                    self._subscribers[event].append(subscriber)
+                    self._subscribers[event].update([subscriber])
             except KeyError:
-                self._subscribers[event] = [subscriber]
+                self._subscribers[event] = set([subscriber])
 
     def event_trigger(self, event):
-        if event.id != TICK:
-            print(event)
-
         if event.id in self._subscribers:
             for subscriber in self._subscribers[event.id]:
+                if event.id != TICK:
+                    print("{} notified of {}.".format(subscriber, event))
                 subscriber.event_trigger(event)
