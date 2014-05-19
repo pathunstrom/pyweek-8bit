@@ -6,7 +6,7 @@ STRIKE = 0
 GRAPPLE = 1
 BLOCK = 2
 
-test_HP = 20
+test_HP = 5
 moves = [(STRIKE, "Strike"), (GRAPPLE, "Grapple"), (BLOCK, "Block")]
 test_move_list = {key: moves for key in range(3)}
 
@@ -20,6 +20,7 @@ class BattleModel(object):
         self.player = Monster(test_HP, test_move_list)
         self.opponent = Monster(test_HP, test_move_list)
         self.selection = 0
+        self.selection_o = 0
 
     def up(self):
         if self.selection:
@@ -32,6 +33,39 @@ class BattleModel(object):
             self.selection = 0
         else:
             self.selection += 1
+
+    def resolve(self):
+        ps = self.player.stance
+        os = self.opponent.stance
+        if self.selection == self.selection_o:
+            self._draw(self.selection)
+        elif self.selection == STRIKE:
+            if self.selection_o == BLOCK:
+                self.player.damage(1)
+            else:
+                self.opponent.damage(1)
+        elif self.selection == BLOCK:
+            if self.selection_o == GRAPPLE:
+                self.player.damage(1)
+            else:
+                self.opponent.damage(1)
+        else:
+            if self.selection_o == STRIKE:
+                self.player.damage(1)
+            else:
+                self.opponent.damage(1)
+
+    def _draw(self, advantage):
+        if self.player.stance == self.opponent.stance:
+            return
+        elif self.player.stance == advantage:
+            self.opponent.damage(1)
+        elif self.opponent.stance == advantage:
+            self.player.damage(1)
+        else:
+            return
+
+
 
 class Monster(object):
     """
@@ -52,10 +86,10 @@ class Monster(object):
         return self.max_hp - self._damage
 
     def damage(self, amount):
-        self._damage += amount * -1
+        self._damage += amount
 
     def heal(self, amount):
-        self._damage += amount
+        self._damage += amount * -1
 
     def change_stance(self, stance):
         self.stance = stance

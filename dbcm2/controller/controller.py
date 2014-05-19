@@ -31,7 +31,10 @@ class PygameController(object):
         model (GameEngine): a strong reference to the game Model.
         """
 
-        self.dispatch = dispatcher.dispatcher
+        try:
+            self.dispatch = dispatcher.dispatcher
+        except AttributeError:
+            self.dispatch = dispatcher
         dispatcher.subscribe([TICK, INIT_SCREEN], self)
         self.model = model
         self.active = False
