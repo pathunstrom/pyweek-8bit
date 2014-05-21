@@ -17,10 +17,13 @@ class BattleModel(object):
     """
 
     def __init__(self):
+        self.winner = None
         self.player = Monster(test_HP, test_move_list)
         self.opponent = Monster(test_HP, test_move_list)
         self.selection = 0
+        self.local_set = False
         self.selection_o = 0
+        self.remote_set = False
 
     def up(self):
         if self.selection:
@@ -34,9 +37,11 @@ class BattleModel(object):
         else:
             self.selection += 1
 
+    def set_opponent(self, selection):
+        self.selection_o = selection
+        self.remote_set = not self.remote_set
+
     def resolve(self):
-        ps = self.player.stance
-        os = self.opponent.stance
         if self.selection == self.selection_o:
             self._draw(self.selection)
         elif self.selection == STRIKE:
@@ -54,6 +59,12 @@ class BattleModel(object):
                 self.player.damage(1)
             else:
                 self.opponent.damage(1)
+
+        self.player.stance = self.selection
+        self.opponent.stance = self.selection_o
+        self.selection = 0
+        self.local_set = False
+        self.remote_set = False
 
     def _draw(self, advantage):
         if self.player.stance == self.opponent.stance:

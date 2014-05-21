@@ -3,24 +3,49 @@ import dbcm2.model.state as state
 from dbcm2.dispatch import *
 
 
-class Controller(Dispatch):
+class ControlDispatch(Dispatch):
 
     def __init__(self, dispatcher):
-        super(Controller, self).__init__()
+        super(ControlDispatch, self).__init__()
         self.dispatcher = dispatcher
         self.events = set()
 
     def subscribe(self, events, subscriber):
-        super(Controller, self).subscribe(events, subscriber)
+        super(ControlDispatch, self).subscribe(events, subscriber)
         self.events.update(events)
         print self.events
         self.dispatcher.subscribe(self.events, self)
 
     def event_trigger(self, event):
-        super(Controller, self).event_trigger(event)
+        super(ControlDispatch, self).event_trigger(event)
 
 
-class PygameController(object):
+class Controller(object):
+    """
+    A parent class for all controllers.
+    """
+
+    def __init__(self, dispatcher, model, events=(TICK,)):
+        """
+        dispatcher (Dispatch): Allows posting events to the Dispatch.
+        model (GameEngine): a strong reference to the game Model.
+        """
+
+        try:
+            self.dispatch = dispatcher.dispatcher
+        except AttributeError:
+            self.dispatch = dispatcher
+        dispatcher.subscribe(events, self)
+        self.model = model
+
+    def event_trigger(self, event):
+        """
+        Receive event notifications. Default version returns true regardless.
+        Subclass and modify.
+        """
+        return True
+
+class PygameController(Controller):
     """
     Handles keyboard input.
     """
@@ -31,12 +56,8 @@ class PygameController(object):
         model (GameEngine): a strong reference to the game Model.
         """
 
-        try:
-            self.dispatch = dispatcher.dispatcher
-        except AttributeError:
-            self.dispatch = dispatcher
-        dispatcher.subscribe([TICK, INIT_SCREEN], self)
-        self.model = model
+        super(PygameController, self).__init__(dispatcher, model,
+                                               [TICK, INIT_SCREEN])
         self.active = False
 
     def event_trigger(self, event):
@@ -70,6 +91,8 @@ class PygameController(object):
         elif current_state == state.MENU:
             self.handle_menu()
         elif current_state == state.BATTLE_RESOLUTION:
+            self.handle_battle_start()
+        elif current_state == state.BATTLE_ANIMATION:
             self.handle_skip()
         else:
             raise state.StateError(current_state)
@@ -79,7 +102,7 @@ class PygameController(object):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     self.dispatch.event_trigger(
-                        StateChangeEvent(state.BATTLE_RESOLUTION))
+                        StateChangeEvent(state.BATTLE_ANIMATION))
                 elif event.key in [pygame.K_UP, pygame.K_LEFT]:
                     self.model.state_model.up()
                 elif event.key in [pygame.K_DOWN, pygame.K_RIGHT]:
@@ -91,6 +114,18 @@ class PygameController(object):
                         KeyEvent(event.key, event.unicode, pygame.KEYDOWN))
             elif event.type == pygame.QUIT:
                 self.dispatch.event_trigger(QuitEvent())
+
+    def handle_battle_start(self):
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.dispatch.event_trigger(StateChangeEvent())
+                elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                    if self.model.state_model.winner:
+                        self.dispatch.event_trigger(StateChangeEvent())
+                    else:
+                        self.dispatch.event_trigger(
+                            StateChangeEvent(state.BATTLE_MENU))
 
     def handle_menu(self):
         for event in pygame.event.get():
@@ -110,7 +145,7 @@ class PygameController(object):
         # Clear the event queue to prevent phantom commands.
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key in [pygame.KEYDOWN,
+                if event.key in [pygame.K_SPACE,
                                  pygame.K_ESCAPE,
                                  pygame.K_RETURN]:
                     self.dispatch.event_trigger(StateChangeEvent())
@@ -119,9 +154,8 @@ class PygameController(object):
 
     def menu_accept(self):
         if self.model.state_model.selection == 0:
-            print("Controller: Enter Battle Menu.")
             self.dispatch.event_trigger(
-                StateChangeEvent(state.BATTLE_MENU))
+                StateChangeEvent(state.BATTLE_RESOLUTION))
         elif self.model.state_model.selection == 1:
             # self.model.state.push(state.BREED_MENU)
             pass
@@ -130,3 +164,28 @@ class PygameController(object):
             pass
         else:
             self.dispatch.event_trigger(QuitEvent())
+
+
+class AutomatedController(Controller):
+    """
+    A controller to handle state based controls and automation.
+    """
+
+    def __init__(self, dispatcher, model):
+        super(AutomatedController, self).__init__(dispatcher, model)
+        self.clock = pygame.time.Clock()
+
+    def event_trigger(self, event):
+
+        if event.id == TICK:
+            self.model.time = self.clock.tick()
+            current_state = self.model.state.peek()
+            if current_state == state.BATTLE_MENU:
+                if self.model.state_model.player.hp == 0:
+                    self.model.state_model.winner = "Opponent"
+                    self.dispatch.event_trigger(StateChangeEvent())
+                elif self.model.state_model.opponent.hp == 0:
+                    self.model.state_model.winner = "Player"
+                    self.dispatch.event_trigger(StateChangeEvent())
+                else:
+                    return

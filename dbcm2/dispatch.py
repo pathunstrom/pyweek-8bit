@@ -56,11 +56,11 @@ class StateChangeEvent(object):
         state = self.state
         return "Event: StateChangeEvent, Push: {}".format(state)
 
+
 class TickEvent(object):
 
-    def __init__(self, time=0):
+    def __init__(self):
         self.id = TICK
-        self.time = time
 
     def __repr__(self):
         return "Event: TickEvent, Time: {}ms".format(self.time)

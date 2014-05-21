@@ -17,7 +17,7 @@ class GameEngine(object):
         self.running = False
         self.state = state.StateMachine()
         self.state_model = menu.MainMenu()
-        self.counter = 0
+        self.time = 0
 
     def event_trigger(self, event):
         """
@@ -48,14 +48,14 @@ class GameEngine(object):
         self.dispatch.event_trigger(InitializeEvent())
         self.state.push(state.MENU)
         while self.running:
-            self.dispatch.event_trigger(TickEvent(self.clock.tick()))
+            self.dispatch.event_trigger(TickEvent())
 
     def change_state_model(self, new_state):
         if new_state == state.MENU:
             if not type(self.state_model) == menu.MainMenu:
                 self.state_model = menu.MainMenu()
-        elif new_state == state.BATTLE_MENU:
+        elif new_state == state.BATTLE_RESOLUTION:
             if not type(self.state_model) == battle.BattleModel:
                 self.state_model = battle.BattleModel()
-        elif new_state == state.BATTLE_RESOLUTION:
+        elif new_state == state.BATTLE_ANIMATION:
             self.state_model.resolve()

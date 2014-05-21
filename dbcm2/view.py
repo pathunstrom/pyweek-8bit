@@ -43,18 +43,20 @@ class GraphicalView():
         Render the screen based on state.
         """
         current_state = self.model.state.peek()
+        self.display.fill(BATTLE_BG_COLOR)
         if current_state == state.MENU:
             self.render_menu()
-        elif current_state == state.BATTLE_MENU:
-            self.render_battle_menu()
         elif current_state == state.BATTLE_RESOLUTION:
             self.render_battle_resolution()
+        elif current_state == state.BATTLE_MENU:
+            self.render_battle_menu()
+        elif current_state == state.BATTLE_ANIMATION:
+            self.render_battle_animation()
         else:
             raise state.StateError(current_state)
         pygame.display.update()
 
     def render_menu(self):
-        self.display.fill((255, 255, 255))
         button = self.ui_elements[0]
         for index, option in enumerate(self.model.state_model.options):
             location = 280, index * 50
@@ -67,7 +69,6 @@ class GraphicalView():
             self.display.blit(message, text_location)
 
     def render_battle_frame(self):
-        self.display.fill(BATTLE_BG_COLOR)
         pygame.draw.rect(self.display, (242, 218, 218),
                          pygame.Rect(0, 250, 400, 150))
         pygame.draw.rect(self.display, (26, 64, 63),
@@ -100,8 +101,24 @@ class GraphicalView():
         render = self.small_font.render(message, True, (0, 0, 0))
         self.display.blit(render, (45, 33))
 
-
     def render_battle_resolution(self):
+        if self.model.state_model.winner:
+            winner = self.model.state_model.winner
+            message = self.small_font.render(
+                "The winner is {}".format(winner),
+                True, (255, 255, 255))
+            self.display.blit(message, (0, 0))
+            message = self.small_font.render(
+                "Returning you to the main menu. . .",
+                True, (255, 255, 255))
+            self.display.blit(message, (0, 30))
+        else:
+            message = self.small_font.render(
+                "Prepare for battle. . .",
+                True, (255, 255, 255))
+            self.display.blit(message, (0, 0))
+
+    def render_battle_animation(self):
         self.render_battle_frame()
         message = self.small_font.render(
             'The game is animating a battle.',
