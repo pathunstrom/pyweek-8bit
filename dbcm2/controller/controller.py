@@ -1,3 +1,4 @@
+from random import randint
 import pygame
 import dbcm2.model.state as state
 from dbcm2.dispatch import *
@@ -98,20 +99,21 @@ class PygameController(Controller):
             raise state.StateError(current_state)
 
     def handle_battle_menu(self):
+        m = self.model.state_model
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    self.dispatch.event_trigger(
-                        StateChangeEvent(state.BATTLE_ANIMATION))
-                elif event.key in [pygame.K_UP, pygame.K_LEFT]:
-                    self.model.state_model.up()
-                elif event.key in [pygame.K_DOWN, pygame.K_RIGHT]:
-                    self.model.state_model.down()
-                elif event.key == pygame.K_ESCAPE:
-                    self.dispatch.event_trigger(StateChangeEvent())
-                else:
-                    self.dispatch.event_trigger(
-                        KeyEvent(event.key, event.unicode, pygame.KEYDOWN))
+            if not m.local_set:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        m.local_set = True
+                    elif event.key in [pygame.K_UP, pygame.K_LEFT]:
+                        self.model.state_model.up()
+                    elif event.key in [pygame.K_DOWN, pygame.K_RIGHT]:
+                        self.model.state_model.down()
+                    elif event.key == pygame.K_ESCAPE:
+                        self.dispatch.event_trigger(StateChangeEvent())
+                    else:
+                        self.dispatch.event_trigger(
+                            KeyEvent(event.key, event.unicode, pygame.KEYDOWN))
             elif event.type == pygame.QUIT:
                 self.dispatch.event_trigger(QuitEvent())
 
@@ -180,12 +182,26 @@ class AutomatedController(Controller):
         if event.id == TICK:
             self.model.time = self.clock.tick()
             current_state = self.model.state.peek()
+            m = self.model.state_model
             if current_state == state.BATTLE_MENU:
-                if self.model.state_model.player.hp == 0:
-                    self.model.state_model.winner = "Opponent"
+                if m.player.hp == 0:
+                    m.winner = "Opponent"
                     self.dispatch.event_trigger(StateChangeEvent())
-                elif self.model.state_model.opponent.hp == 0:
-                    self.model.state_model.winner = "Player"
+                elif m.opponent.hp == 0:
+                    m.winner = "Player"
                     self.dispatch.event_trigger(StateChangeEvent())
+                elif m.local_set and not m.remote_set:
+                    if m.multiplayer:
+                        pass
+                    else:
+                        m.selection_o = self.ai()
+                        m.remote_set = True
+                elif m.local_set and m.remote_set:
+                    self.dispatch.event_trigger(
+                        StateChangeEvent(
+                            state.BATTLE_ANIMATION))
                 else:
                     return
+
+    def ai(self):
+        return randint(0, 2)

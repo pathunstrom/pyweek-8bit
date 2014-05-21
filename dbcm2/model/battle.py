@@ -18,6 +18,7 @@ class BattleModel(object):
 
     def __init__(self):
         self.winner = None
+        self.multiplayer = False
         self.player = Monster(test_HP, test_move_list)
         self.opponent = Monster(test_HP, test_move_list)
         self.selection = 0

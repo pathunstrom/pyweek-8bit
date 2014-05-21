@@ -77,6 +77,10 @@ class GraphicalView():
         # Draw battle zone
         # Draw Player Information
         hp_element = self.ui_elements[1]
+        stance_sprite = self.ui_elements[2]
+        stance_source = pygame.Rect(0,
+                                    self.model.state_model.player.stance * 50,
+                                    50, 50)
         hp_max = self.model.state_model.player.max_hp
         hp_current = self.model.state_model.player.hp
         hp_percent = int(hp_current / float(hp_max) * 100)
@@ -84,12 +88,16 @@ class GraphicalView():
         pygame.draw.rect(self.display, color,
                          pygame.Rect(270, 183, hp_percent, 5))
         self.display.blit(hp_element, (170, 170))
+        self.display.blit(stance_sprite, (180, 180), stance_source)
         message = "{} / {}".format(hp_current, hp_max)
         render = self.small_font.render(message, True, (0, 0, 0))
         self.display.blit(render, (285, 193))
 
         # Draw the Enemy Information
         hp_element = pygame.transform.flip(hp_element, 1, 0)
+        stance_source = pygame.Rect(0,
+                                    self.model.state_model.opponent.stance * 50,
+                                    50, 50)
         hp_max = self.model.state_model.opponent.max_hp
         hp_current = self.model.state_model.opponent.hp
         hp_percent = int(hp_current / float(hp_max) * 100)
@@ -97,6 +105,7 @@ class GraphicalView():
         pygame.draw.rect(self.display, color,
                          pygame.Rect(30, 23, hp_percent, 5))
         self.display.blit(hp_element, (10, 10))
+        self.display.blit(stance_sprite, (160, 20), stance_source)
         message = "{} / {}".format(hp_current, hp_max)
         render = self.small_font.render(message, True, (0, 0, 0))
         self.display.blit(render, (45, 33))
