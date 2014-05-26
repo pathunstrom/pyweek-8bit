@@ -25,6 +25,8 @@ class BattleModel(object):
         self.local_set = False
         self.selection_o = 0
         self.remote_set = False
+        self.animation_step = 0
+        self.step_complete = False
 
     def up(self):
         if self.selection:
@@ -38,34 +40,44 @@ class BattleModel(object):
         else:
             self.selection += 1
 
+    def step_animation(self):
+        self.resolve()
+        self.animation_step += 1
+
+    def end_animation(self):
+        self.animation_step = 0
+
     def set_opponent(self, selection):
         self.selection_o = selection
         self.remote_set = not self.remote_set
 
     def resolve(self):
-        if self.selection == self.selection_o:
-            self._draw(self.selection)
-        elif self.selection == STRIKE:
-            if self.selection_o == BLOCK:
-                self.player.damage(1)
+        if self.animation_step == 5:
+            self.selection = 0
+            self.local_set = False
+            self.remote_set = False
+        elif self.animation_step == 4:
+            self.opponent.stance = self.selection_o
+        elif self.animation_step == 3:
+            self.player.stance = self.selection
+        elif self.animation_step == 2:
+            if self.selection == self.selection_o:
+                self._draw(self.selection)
+            elif self.selection == STRIKE:
+                if self.selection_o == BLOCK:
+                    self.player.damage(1)
+                else:
+                    self.opponent.damage(1)
+            elif self.selection == BLOCK:
+                if self.selection_o == GRAPPLE:
+                    self.player.damage(1)
+                else:
+                    self.opponent.damage(1)
             else:
-                self.opponent.damage(1)
-        elif self.selection == BLOCK:
-            if self.selection_o == GRAPPLE:
-                self.player.damage(1)
-            else:
-                self.opponent.damage(1)
-        else:
-            if self.selection_o == STRIKE:
-                self.player.damage(1)
-            else:
-                self.opponent.damage(1)
-
-        self.player.stance = self.selection
-        self.opponent.stance = self.selection_o
-        self.selection = 0
-        self.local_set = False
-        self.remote_set = False
+                if self.selection_o == STRIKE:
+                    self.player.damage(1)
+                else:
+                    self.opponent.damage(1)
 
     def _draw(self, advantage):
         if self.player.stance == self.opponent.stance:

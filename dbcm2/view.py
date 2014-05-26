@@ -6,7 +6,10 @@ from dbcm2.model import state
 from dispatch import *
 
 
-BATTLE_BG_COLOR = 191, 163, 163
+BATTLE_BG_COLOR = 240, 180, 180
+TEXT_COLOR = 0, 0, 0
+
+# Character width for text field = 49 characters.
 
 
 class GraphicalView():
@@ -65,7 +68,7 @@ class GraphicalView():
             if index == self.model.state_model.selection:
                 source.top = 0
             self.display.blit(button, location, source)
-            message = self.small_font.render(option, True, (0, 0, 0))
+            message = self.small_font.render(option, True, TEXT_COLOR)
             self.display.blit(message, text_location)
 
     def render_battle_frame(self):
@@ -90,7 +93,7 @@ class GraphicalView():
         self.display.blit(hp_element, (170, 170))
         self.display.blit(stance_sprite, (180, 180), stance_source)
         message = "{} / {}".format(hp_current, hp_max)
-        render = self.small_font.render(message, True, (0, 0, 0))
+        render = self.small_font.render(message, True, TEXT_COLOR)
         self.display.blit(render, (285, 193))
 
         # Draw the Enemy Information
@@ -107,7 +110,7 @@ class GraphicalView():
         self.display.blit(hp_element, (10, 10))
         self.display.blit(stance_sprite, (160, 20), stance_source)
         message = "{} / {}".format(hp_current, hp_max)
-        render = self.small_font.render(message, True, (0, 0, 0))
+        render = self.small_font.render(message, True, TEXT_COLOR)
         self.display.blit(render, (45, 33))
 
     def render_battle_resolution(self):
@@ -115,28 +118,36 @@ class GraphicalView():
             winner = self.model.state_model.winner
             message = self.small_font.render(
                 "The winner is {}".format(winner),
-                True, (255, 255, 255))
+                True, TEXT_COLOR)
             self.display.blit(message, (0, 0))
             message = self.small_font.render(
                 "Returning you to the main menu. . .",
-                True, (255, 255, 255))
+                True, TEXT_COLOR)
             self.display.blit(message, (0, 30))
         else:
             message = self.small_font.render(
                 "Prepare for battle. . .",
-                True, (255, 255, 255))
+                True, TEXT_COLOR)
             self.display.blit(message, (0, 0))
 
     def render_battle_animation(self):
         self.render_battle_frame()
-        message = self.small_font.render(
-            'The game is animating a battle.',
-            True, (255, 255, 255))
-        self.display.blit(message, (0, 100))
-        message = self.small_font.render(
-            'It will return to the battle menu shortly.',
-            True, (255, 255, 255))
-        self.display.blit(message, (0, 130))
+        if self.model.state_model.animation_step >= 0:
+            message = self.small_font.render(
+                "Attacks chosen!", True, TEXT_COLOR)
+            self.display.blit(message, (5, 255))
+        if self.model.state_model.animation_step >= 1:
+            value = self.attack_result()
+            message = self.small_font.render(
+                value, True, TEXT_COLOR)
+            self.display.blit(message, (5, 270))
+        if self.model.state_model.animation_step >= 5:
+            message = self.small_font.render(
+                "Attacks resolved.", True, TEXT_COLOR)
+            self.display.blit(message, (5, 285))
+
+    def attack_result(self):
+        return "This is placeholder text."
 
     def render_battle_menu(self):
         self.render_battle_frame()
@@ -151,7 +162,7 @@ class GraphicalView():
             if index == self.model.state_model.selection:
                 source.top = 0
             self.display.blit(button, location, source)
-            message = self.small_font.render(option, True, (0, 0, 0))
+            message = self.small_font.render(option, True, TEXT_COLOR)
             self.display.blit(message, text_location)
 
     def render_splash(self):

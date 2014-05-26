@@ -57,5 +57,3 @@ class GameEngine(object):
         elif new_state == state.BATTLE_RESOLUTION:
             if not type(self.state_model) == battle.BattleModel:
                 self.state_model = battle.BattleModel()
-        elif new_state == state.BATTLE_ANIMATION:
-            self.state_model.resolve()

@@ -94,7 +94,7 @@ class PygameController(Controller):
         elif current_state == state.BATTLE_RESOLUTION:
             self.handle_battle_start()
         elif current_state == state.BATTLE_ANIMATION:
-            self.handle_skip()
+            self.advance_animation()
         else:
             raise state.StateError(current_state)
 
@@ -143,14 +143,14 @@ class PygameController(Controller):
             elif event.type == pygame.QUIT:
                 self.dispatch.event_trigger(QuitEvent())
 
-    def handle_skip(self):
+    def advance_animation(self):
         # Clear the event queue to prevent phantom commands.
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key in [pygame.K_SPACE,
                                  pygame.K_ESCAPE,
                                  pygame.K_RETURN]:
-                    self.dispatch.event_trigger(StateChangeEvent())
+                    self.model.state_model.step_animation()
             elif event.type == pygame.QUIT:
                 self.dispatch.event_trigger(QuitEvent())
 
@@ -202,6 +202,10 @@ class AutomatedController(Controller):
                             state.BATTLE_ANIMATION))
                 else:
                     return
+            elif current_state == state.BATTLE_ANIMATION:
+                if self.model.state_model.animation_step > 5:
+                    self.model.state_model.end_animation()
+                    self.dispatch.event_trigger(StateChangeEvent())
 
     def ai(self):
         return randint(0, 2)
