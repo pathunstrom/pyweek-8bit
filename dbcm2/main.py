@@ -3,6 +3,7 @@ import model
 import view
 import controller
 
+
 def run():
     dispatcher = dispatch.Dispatch()
     game_model = model.engine.GameEngine(dispatcher)

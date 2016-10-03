@@ -172,7 +172,7 @@ class GraphicalView():
             True, (42, 102, 26))
         self.display.blit(render, (175, 180))
         render = self.small_font.render(
-            'Patrick Thunstrom',
+            'Piper Thunstrom',
             True, (42, 102, 26))
         self.display.blit(render, (140, 200))
 
